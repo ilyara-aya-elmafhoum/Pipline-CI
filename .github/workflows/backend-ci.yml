@@ -64,6 +64,9 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
+      - name: Build Docker image
+        run: docker build -t ilyara-backend:latest .
+
       - name: Run selective tests (skip ApplicationTests)
         run: ./mvnw test -Dtest='!ApplicationTests' -Dsurefire.failIfNoSpecifiedTests=false
         env:
