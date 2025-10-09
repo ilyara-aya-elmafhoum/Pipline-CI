@@ -1,3 +1,14 @@
+name: backend CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
 jobs:
   build-test-run:
     runs-on: self-hosted
