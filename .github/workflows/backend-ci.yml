@@ -69,6 +69,14 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
+
+
+     - name: Import SonarQube certificate into JDK
+       run: |
+         echo | openssl s_client -connect 188.213.128.197:443 -servername 188.213.128.197 2>/dev/null | openssl x509 > sonar.crt
+         $JAVA_HOME/bin/keytool -import -trustcacerts -noprompt -alias sonar -file sonar.crt -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit
+
+
       # 6. SonarQube Analysis
       - name: SonarQube Analysis
         run: |
