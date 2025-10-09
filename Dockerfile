@@ -2,8 +2,7 @@
 FROM openjdk:17-jdk-slim
 
 # Copy the jar file
-COPY target/app.jar /app.jar
-
+COPY target/*.jar /app.jar
 # Expose the port Spring Boot runs on
 EXPOSE 8080
 
