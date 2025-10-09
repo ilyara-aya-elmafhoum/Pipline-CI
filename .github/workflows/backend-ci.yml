@@ -85,6 +85,7 @@ jobs:
             -Dsonar.host.url=https://188.213.128.197 \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
             #-Djavax.net.ssl.trustStore=/dev/null
+            -Dsonar.ws.ignoreCertificate=true
       # 7. Build Docker image
       - name: Build Docker image
         run: docker build -t ilyara-backend:latest .
