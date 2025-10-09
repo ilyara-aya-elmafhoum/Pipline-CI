@@ -1,0 +1,190 @@
+Table User {
+  UserId int [pk]
+  FirstName varchar
+  LastName varchar
+  ContactEmail varchar
+  Gender varchar
+  BirthDate date
+  PhoneCountryCode varchar
+  PhoneNumber varchar
+  LanguageId int
+  NationalityId int
+  SpokenLanguages json  // ["en","fr"]
+  RegistrationStep int
+  CityId int
+  CreatedAt datetime
+  UpdatedAt datetime
+}
+
+Table Otp {
+  OtpId uuid [pk]
+  OtpCode varchar
+  LastTimeChanged datetime
+  OtpCount int
+  OtpType varchar
+  UserId int
+}
+
+Table Language {
+  LanguageId int [pk]
+  LanguageName varchar
+  LanguageCode varchar
+  IsActive boolean
+}
+
+Table UserAuthMethod {
+  UserAuthMethodId int [pk]
+  UserId int
+  AuthProvider varchar   // wesport, google, apple, facebook
+  AuthenticationEmail varchar
+  PasswordHash varchar
+  CreatedAt datetime
+  UpdatedAt datetime
+}
+
+Table Country {
+  CountryId int [pk]
+  CountryName varchar
+  PhoneCallingCode varchar
+  FlagUrl varchar
+}
+
+Table City {
+  CityId int [pk]
+  CityName varchar
+  CountryId int
+}
+
+Table Club {
+  ClubId int [pk]
+  ClubName varchar
+  LogoUrl varchar
+  CityId int
+}
+
+Table Federation {
+  FederationId int [pk]
+  FederationName varchar
+  LogoUrl varchar
+  CountryId int 
+}
+
+Table Sport {
+  SportId int [pk]
+  SportName varchar
+}
+
+Table Position {
+  PositionId int [pk]
+  Abbreviation varchar
+  PositionLabel varchar
+}
+
+Table PlayerCategory {
+  PlayerCategoryId int [pk]
+  CategoryLabel varchar
+  CategoryGender varchar
+}
+
+Table Player {
+  PlayerId int [pk]
+  ProfilePhoto varchar
+  Height int
+  Weight int
+  Foot varchar
+  PositionId int
+  PlayerCategoryId int
+  CreatedAt datetime
+  UpdatedAt datetime
+}
+
+Table PlayerSport {
+  PlayerSportId int [pk]
+  UserId int        // optional link to an account (player, coach, etc.)
+  PlayerId int
+  SportId int
+}
+
+Table Education {
+  EducationId int [pk]
+  PlayerId int
+  CityId int
+  School varchar
+  StartDate date
+  EndDate date
+  Degree varchar
+}
+
+Table SportsExperience {
+  SportsExperienceId int [pk]
+  PlayerId int
+  SportId int
+  StartDate date
+  EndDate date
+  ContractType varchar
+  League varchar
+  StrongFoot varchar        // right, left, ambidextrous
+  PrimaryPositionId int
+  SecondaryPositionId int
+  PlayerCategoryId int
+  ClubId int
+}
+
+
+// Ref: User.LanguageId > Language.LanguageId
+// Ref: User.CityId > City.CityId
+// Ref: User.NationalityId > Country.CountryId
+
+// Ref: Otp.UserId > User.UserId
+
+// Ref: UserAuthMethod.UserId > User.UserId
+
+// Ref:  Country.CountryId > City.CountryId
+
+// Ref: Club.CityId > City.CityId
+// Ref: Country.CountryId > Federation.CountryId
+
+// Ref: Player.PositionId > Position.PositionId
+// Ref: Player.PlayerCategoryId > PlayerCategory.PlayerCategoryId
+
+// Ref: PlayerSport.UserId > User.UserId
+// Ref: PlayerSport.PlayerId > Player.PlayerId
+// Ref: PlayerSport.SportId > Sport.SportId
+
+// Ref: SportsExperience.ClubId > Club.ClubId
+// Ref: SportsExperience.PrimaryPositionId > Position.PositionId
+// Ref: SportsExperience.SecondaryPositionId > Position.PositionId
+// Ref: SportsExperience.PlayerCategoryId > PlayerCategory.PlayerCategoryId
+
+
+
+
+// Relations avec cardinalités (une seule ligne par relation)
+Ref: User.LanguageId > Language.LanguageId // (Utilisateur 1,1) — (Langue 0,N)
+Ref: User.CityId > City.CityId // (Utilisateur 1,1) — (Ville 0,N)
+Ref: User.NationalityId > Country.CountryId // (Utilisateur 1,1) — (Pays 0,N)
+
+Ref: Otp.UserId > User.UserId // (Otp 1,1) — (Utilisateur 0,N)
+
+Ref: UserAuthMethod.UserId > User.UserId // (Utilisateur 1,1) — (AuthMethod 1,N)
+
+Ref: PlayerSport.UserId > User.UserId // (Utilisateur 0,1) — (JoueurSport 0,N)
+Ref: PlayerSport.PlayerId > Player.PlayerId // (Joueur 1,1) — (JoueurSport 1,N)
+Ref: PlayerSport.SportId > Sport.SportId // (JoueurSport 1,1) — (Sport 0,N)
+
+Ref: Player.PositionId > Position.PositionId
+Ref: Player.PlayerCategoryId > PlayerCategory.PlayerCategoryId // (Joueur 1,1) — (CatégorieJoueur 0,N)
+
+Ref: Education.PlayerId > Player.PlayerId // (Joueur 1,1) — (CursusÉtude 0,N)
+Ref: Education.CityId > City.CityId
+
+Ref: SportsExperience.PlayerCategoryId > PlayerCategory.PlayerCategoryId // (CatégorieJoueur 1,1) — (ExpérienceSportive 0,N)
+Ref: SportsExperience.ClubId > Club.ClubId // (Expérience 1,1) — (Club 0,N)
+Ref: SportsExperience.PrimaryPositionId > Position.PositionId
+Ref: SportsExperience.SecondaryPositionId > Position.PositionId
+Ref: SportsExperience.PlayerId > Player.PlayerId
+Ref: SportsExperience.SportId > Sport.SportId
+
+Ref: Country.CountryId > City.CountryId // (Ville 1,1) — (Pays 0,N)
+Ref: Club.CityId > City.CityId // (Club 1,1) — (Ville 0,N)
+Ref: Country.CountryId > Federation.CountryId // (Fédération 1,1) — (Pays 0,N)

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ilyara API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .left-panel {
+            padding: 30px;
+            border-right: 1px solid #eee;
+        }
+        
+        .right-panel {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .response-area {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background: #28a745;
+        }
+        
+        .status-disconnected {
+            background: #dc3545;
+        }
+        
+        .auth-status {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .quick-test {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-panel {
+                border-top: 1px solid #eee;
+                border-right: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Ilyara API Tester</h1>
+            <p>Test all backend endpoints with JWT authentication</p>
+            <div style="margin-top: 15px;">
+                <span class="status-indicator" id="connection-status"></span>
+                <span id="connection-text">Checking connection...</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="auth-status" id="auth-status">
+                    🔐 Not Authenticated
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('registration')">Registration</button>
+                    <button class="tab" onclick="showTab('auth')">Auth</button>
+                    <button class="tab" onclick="showTab('onboarding')">Onboarding</button>
+                </div>
+                
+                <!-- Registration Tab -->
+                <div id="registration" class="tab-content active">
+                    <div class="section">
+                        <h3>📝 Step 1: Start Registration</h3>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="reg-email" placeholder="user@example.com" value="test@example.com">
+                        </div>
+                        <button onclick="startRegistration()">Start Registration</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>✅ Step 2: Verify OTP</h3>
+                        <div class="form-group">
+                            <label>OTP (check server logs):</label>
+                            <input type="text" id="otp" placeholder="123456">
+                        </div>
+                        <button onclick="verifyOtp()">Verify OTP</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🔑 Step 3: Setup Password</h3>
+                        <div class="form-group">
+                            <label>Password:</label>
+                            <input type="password" id="password" placeholder="SecurePassword123!" value="Houssammadd777@">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password:</label>
+                            <input type="password" id="confirm-password" placeholder="SecurePassword123!" value="Houssammadd777@">
+                        </div>
+                        <button onclick="setupPassword()">Setup Password</button>
+                    </div>
+                </div>
+                
+                <!-- Auth Tab -->
+                <div id="auth" class="tab-content">
+                    <div class="section">
+                        <h3>🔐 Login</h3>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="login-email" placeholder="user@example.com" value="test@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Password:</label>
+                            <input type="password" id="login-password" placeholder="Password" value="Houssammadd777@">
+                        </div>
+                        <button onclick="login()">Login</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🚪 Logout</h3>
+                        <button onclick="logout()">Logout</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🔄 Token Refresh</h3>
+                        <button onclick="refreshToken()">Refresh Token</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📊 Registration Status</h3>
+                        <div class="form-group">
+                            <label>Email to check:</label>
+                            <input type="email" id="status-email" placeholder="user@example.com" value="test@example.com">
+                        </div>
+                        <button onclick="checkRegistrationStatus()">Check Status</button>
+                    </div>
+                </div>
+                
+                <!-- Onboarding Tab -->
+                <div id="onboarding" class="tab-content">
+                    <div class="quick-test">
+                        <strong>Quick Test:</strong> Complete registration first, then test onboarding steps
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📊 Onboarding Status</h3>
+                        <button onclick="getOnboardingStatus()">Get Status</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>⚧️ Select Gender</h3>
+                        <div class="form-group">
+                            <label>Gender:</label>
+                            <select id="gender">
+                                <option value="MALE">Male</option>
+                                <option value="FEMALE">Female</option>
+                                <option value="OTHER">Other</option>
+                                <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                            </select>
+                        </div>
+                        <button onclick="selectGender()">Select Gender</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>👤 Complete Profile</h3>
+                        <div class="form-group">
+                            <label>First Name:</label>
+                            <input type="text" id="firstName" placeholder="John" value="John">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name:</label>
+                            <input type="text" id="lastName" placeholder="Doe" value="Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Birth Date:</label>
+                            <input type="date" id="birthDate" value="1995-01-01">
+                        </div>
+                        <div class="form-group">
+                            <label>Nationality:</label>
+                            <input type="text" id="nationality" placeholder="US" value="US">
+                        </div>
+                        <div class="form-group">
+                            <label>Height (cm):</label>
+                            <input type="number" id="height" placeholder="180" value="180">
+                        </div>
+                        <div class="form-group">
+                            <label>Weight (kg):</label>
+                            <input type="number" id="weight" placeholder="75" value="75">
+                        </div>
+                        <button onclick="completeProfile()">Complete Profile</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>⚽ Select Position</h3>
+                        <button onclick="getPositions()" style="margin-bottom: 10px;">Load Positions</button>
+                        <div class="form-group">
+                            <label>Position:</label>
+                            <select id="position">
+                                <option value="GOALKEEPER">Goalkeeper</option>
+                                <option value="DEFENDER">Defender</option>
+                                <option value="MIDFIELDER">Midfielder</option>
+                                <option value="FORWARD">Forward</option>
+                            </select>
+                        </div>
+                        <button onclick="selectPosition()">Select Position</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🏆 Select Categories</h3>
+                        <button onclick="getCategories()" style="margin-bottom: 10px;">Load Categories</button>
+                        <div class="form-group">
+                            <label>Categories:</label>
+                            <select id="categories" multiple>
+                                <option value="PROFESSIONAL">Professional</option>
+                                <option value="SEMI_PROFESSIONAL">Semi-Professional</option>
+                                <option value="AMATEUR">Amateur</option>
+                                <option value="YOUTH">Youth</option>
+                            </select>
+                        </div>
+                        <button onclick="selectCategories()">Select Categories</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <h3>📡 API Response</h3>
+                <div class="response-area" id="response-area">
+Welcome to Ilyara API Tester!
+
+Backend Status: Loading...
+Auth Status: Not authenticated
+
+Ready to test endpoints. Start with registration or login.
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="clearResponse()">Clear Response</button>
+                    <button onclick="checkServerStatus()">Check Server Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080';
+        let accessToken = localStorage.getItem('access_token');
+        let registrationToken = localStorage.getItem('registration_token');
+        
+        // Update auth status display
+        function updateAuthStatus() {
+            const authStatus = document.getElementById('auth-status');
+            if (accessToken) {
+                authStatus.innerHTML = '🔐 Authenticated ✅';
+                authStatus.style.background = '#d4edda';
+                authStatus.style.color = '#155724';
+            } else {
+                authStatus.innerHTML = '🔐 Not Authenticated ❌';
+                authStatus.style.background = '#f8d7da';
+                authStatus.style.color = '#721c24';
+            }
+        }
+        
+        // Show tab
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        // Make API request
+        async function makeRequest(method, endpoint, body = null, useRegistrationToken = false) {
+            const url = BASE_URL + endpoint;
+            
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            if (useRegistrationToken && registrationToken) {
+                headers['Authorization'] = `Bearer ${registrationToken}`;
+            } else if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+            
+            const options = {
+                method,
+                headers
+            };
+            
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            
+            try {
+                logRequest(method, endpoint, body, headers);
+                
+                const response = await fetch(url, options);
+                const data = await response.json();
+                
+                logResponse(response.status, data);
+                
+                return { status: response.status, data };
+            } catch (error) {
+                logError('Network Error: ' + error.message);
+                return { status: 0, data: { error: error.message } };
+            }
+        }
+        
+        // Logging functions
+        function logRequest(method, endpoint, body, headers) {
+            const responseArea = document.getElementById('response-area');
+            responseArea.textContent += `\\n\\n→ ${method} ${endpoint}\\n`;
+            if (body) {
+                responseArea.textContent += `Body: ${JSON.stringify(body, null, 2)}\\n`;
+            }
+            if (headers.Authorization) {
+                responseArea.textContent += `Auth: Bearer ${headers.Authorization.substring(7, 20)}...\\n`;
+            }
+            responseArea.scrollTop = responseArea.scrollHeight;
+        }
+        
+        function logResponse(status, data) {
+            const responseArea = document.getElementById('response-area');
+            responseArea.textContent += `← Status: ${status}\\n`;
+            responseArea.textContent += `Response: ${JSON.stringify(data, null, 2)}\\n`;
+            responseArea.scrollTop = responseArea.scrollHeight;
+        }
+        
+        function logError(message) {
+            const responseArea = document.getElementById('response-area');
+            responseArea.textContent += `\\n❌ ERROR: ${message}\\n`;
+            responseArea.scrollTop = responseArea.scrollHeight;
+        }
+        
+        function clearResponse() {
+            document.getElementById('response-area').textContent = 'Response cleared.\\n';
+        }
+        
+        // Registration functions
+        async function startRegistration() {
+            const email = document.getElementById('reg-email').value;
+            const result = await makeRequest('POST', '/api/auth/register/start', {
+                email,
+                language: 'en'
+            });
+            
+            if (result.status === 200) {
+                logResponse(200, { message: '✅ Registration started. Check server logs for OTP.' });
+            }
+        }
+        
+        async function verifyOtp() {
+            const email = document.getElementById('reg-email').value;
+            const otp = document.getElementById('otp').value;
+            const result = await makeRequest('POST', '/api/auth/register/verify-otp', {
+                email,
+                otp
+            });
+            
+            if (result.status === 200 && result.data.registrationToken) {
+                registrationToken = result.data.registrationToken;
+                localStorage.setItem('registration_token', registrationToken);
+                logResponse(200, { message: '✅ OTP verified. Registration token saved.' });
+            }
+        }
+        
+        async function setupPassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            const result = await makeRequest('POST', '/api/auth/register/setup-password', {
+                registrationToken,
+                password,
+                confirmPassword
+            }, true);
+            
+            if (result.status === 200 && result.data.accessToken) {
+                accessToken = result.data.accessToken;
+                localStorage.setItem('access_token', accessToken);
+                localStorage.removeItem('registration_token');
+                registrationToken = null;
+                updateAuthStatus();
+                logResponse(200, { message: '✅ Password setup complete. Access token saved.' });
+            }
+        }
+        
+        // Auth functions
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const result = await makeRequest('POST', '/api/auth/login', {
+                email,
+                password
+            });
+            
+            if (result.status === 200 && result.data.accessToken) {
+                accessToken = result.data.accessToken;
+                localStorage.setItem('access_token', accessToken);
+                updateAuthStatus();
+                logResponse(200, { message: '✅ Login successful. Access token saved.' });
+            }
+        }
+        
+        async function logout() {
+            const result = await makeRequest('POST', '/api/auth/logout', {});
+            
+            if (result.status === 200) {
+                accessToken = null;
+                localStorage.removeItem('access_token');
+                updateAuthStatus();
+                logResponse(200, { message: '✅ Logout successful.' });
+            }
+        }
+        
+        async function refreshToken() {
+            const refreshToken = localStorage.getItem('refresh_token');
+            const result = await makeRequest('POST', '/api/auth/refresh', {
+                refreshToken
+            });
+        }
+        
+        async function checkRegistrationStatus() {
+            const email = document.getElementById('status-email').value;
+            const result = await makeRequest('GET', `/api/auth/register/status?email=${email}`);
+        }
+        
+        // Onboarding functions
+        async function getOnboardingStatus() {
+            const result = await makeRequest('GET', '/api/onboarding/status');
+        }
+        
+        async function selectGender() {
+            const gender = document.getElementById('gender').value;
+            const result = await makeRequest('POST', '/api/onboarding/gender', { gender });
+        }
+        
+        async function completeProfile() {
+            const profileData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                birthDate: document.getElementById('birthDate').value,
+                nationality: document.getElementById('nationality').value,
+                countryOfResidence: document.getElementById('nationality').value,
+                spokenLanguages: ['English'],
+                height: parseInt(document.getElementById('height').value),
+                weight: parseInt(document.getElementById('weight').value)
+            };
+            
+            const result = await makeRequest('POST', '/api/onboarding/complete-profile', profileData);
+        }
+        
+        async function getPositions() {
+            const result = await makeRequest('GET', '/api/onboarding/positions');
+        }
+        
+        async function selectPosition() {
+            const position = document.getElementById('position').value;
+            const result = await makeRequest('POST', '/api/onboarding/position', { position });
+        }
+        
+        async function getCategories() {
+            const result = await makeRequest('GET', '/api/onboarding/categories');
+        }
+        
+        async function selectCategories() {
+            const categories = Array.from(document.getElementById('categories').selectedOptions)
+                .map(option => option.value);
+            const result = await makeRequest('POST', '/api/onboarding/categories', { categories });
+        }
+        
+        // Server status check
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(BASE_URL + '/api/auth/register/start', {
+                    method: 'HEAD'
+                });
+                
+                const statusIndicator = document.getElementById('connection-status');
+                const statusText = document.getElementById('connection-text');
+                
+                if (response.status < 500) {
+                    statusIndicator.className = 'status-indicator status-connected';
+                    statusText.textContent = 'Connected to backend ✅';
+                    logResponse(200, { message: '✅ Backend server is running on ' + BASE_URL });
+                } else {
+                    statusIndicator.className = 'status-indicator status-disconnected';
+                    statusText.textContent = 'Server error ❌';
+                }
+            } catch (error) {
+                const statusIndicator = document.getElementById('connection-status');
+                const statusText = document.getElementById('connection-text');
+                statusIndicator.className = 'status-indicator status-disconnected';
+                statusText.textContent = 'Backend offline ❌';
+                logError('Cannot connect to backend at ' + BASE_URL);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAuthStatus();
+            checkServerStatus();
+            
+            const responseArea = document.getElementById('response-area');
+            responseArea.textContent = `Welcome to Ilyara API Tester!
+
+Testing backend at: ${BASE_URL}
+Current JWT Token: ${accessToken ? accessToken.substring(0, 20) + '...' : 'None'}
+
+🔥 Quick Start:
+1. Start registration with email
+2. Check server logs for OTP
+3. Complete registration flow
+4. Test onboarding endpoints
+
+Ready to test! 🚀
+`;
+        });
+    </script>
+</body>
+</html>

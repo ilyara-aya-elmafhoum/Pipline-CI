@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ilyara Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .response { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; }
+        button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+        input, select { margin: 5px; padding: 8px; width: 200px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🏈 Ilyara Football Platform - Authentication & Onboarding Test</h1>
+    
+    <div class="section">
+        <h2>Authentication (Dual Client Support)</h2>
+        <p>Test both web (cookies) and mobile (JSON tokens) authentication</p>
+        
+        <div>
+            <h3>Login Test</h3>
+            <input type="email" id="loginEmail" placeholder="Email" value="test@example.com">
+            <input type="password" id="loginPassword" placeholder="Password" value="password123">
+            <select id="clientType">
+                <option value="web">Web Client (Cookies)</option>
+                <option value="mobile">Mobile Client (JSON)</option>
+            </select>
+            <button onclick="testLogin()">Login</button>
+        </div>
+        
+        <div id="loginResponse" class="response"></div>
+    </div>
+
+    <div class="section">
+        <h2>Onboarding System (Hexagonal Architecture)</h2>
+        <p>Test the 4-step onboarding process with Position and Category value objects</p>
+        
+        <div>
+            <h3>Step 1: Available Positions</h3>
+            <button onclick="getPositions()">Get Football Positions</button>
+            <div id="positionsResponse" class="response"></div>
+        </div>
+        
+        <div>
+            <h3>Step 2: Available Categories</h3>
+            <button onclick="getCategories()">Get Age Categories</button>
+            <div id="categoriesResponse" class="response"></div>
+        </div>
+        
+        <div>
+            <h3>Step 3: Select Position</h3>
+            <select id="selectedPosition">
+                <option value="GK">Goalkeeper (GK)</option>
+                <option value="CB">Centre Back (CB)</option>
+                <option value="LB">Left Back (LB)</option>
+                <option value="RB">Right Back (RB)</option>
+                <option value="CDM">Defensive Midfielder (CDM)</option>
+                <option value="CM">Central Midfielder (CM)</option>
+                <option value="CAM">Attacking Midfielder (CAM)</option>
+                <option value="LW">Left Wing (LW)</option>
+                <option value="RW">Right Wing (RW)</option>
+                <option value="ST">Striker (ST)</option>
+                <option value="CF">Centre Forward (CF)</option>
+            </select>
+            <button onclick="selectPosition()">Select Position</button>
+            <div id="positionResponse" class="response"></div>
+        </div>
+        
+        <div>
+            <h3>Step 4: Select Categories</h3>
+            <select id="selectedCategory" multiple>
+                <option value="U13">Under 13</option>
+                <option value="U14">Under 14</option>
+                <option value="U15">Under 15</option>
+                <option value="U16">Under 16</option>
+                <option value="U17">Under 17</option>
+                <option value="U18">Under 18</option>
+                <option value="U19">Under 19</option>
+                <option value="SENIOR">Senior</option>
+            </select>
+            <button onclick="selectCategories()">Select Categories</button>
+            <div id="categoryResponse" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let clientType = 'web';
+
+        async function testLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            clientType = document.getElementById('clientType').value;
+            
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // Set client type header for mobile clients
+            if (clientType === 'mobile') {
+                headers['X-Client-Type'] = 'mobile';
+            }
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include' // Include cookies for web clients
+                });
+                
+                const data = await response.json();
+                const responseDiv = document.getElementById('loginResponse');
+                
+                if (data.status === 'success') {
+                    responseDiv.innerHTML = `<div class="success">
+                        <strong>✅ Login Successful!</strong><br>
+                        Client Type: ${clientType}<br>
+                        ${clientType === 'mobile' ? `Access Token: ${data.accessToken ? 'Received' : 'Not received'}<br>
+                        Refresh Token: ${data.refreshToken ? 'Received' : 'Not received'}` : 'Tokens stored in HttpOnly cookies'}
+                    </div>`;
+                    
+                    if (clientType === 'mobile') {
+                        authToken = data.accessToken;
+                    }
+                } else {
+                    responseDiv.innerHTML = `<div class="error">❌ Login Failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('loginResponse').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function getPositions() {
+            try {
+                const response = await fetch('/api/onboarding/positions');
+                const data = await response.json();
+                
+                document.getElementById('positionsResponse').innerHTML = `
+                    <strong>🏃 Available Positions:</strong><br>
+                    ${data.map(pos => `${pos.code} - ${pos.displayName} (${pos.category})`).join('<br>')}
+                `;
+            } catch (error) {
+                document.getElementById('positionsResponse').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function getCategories() {
+            try {
+                const response = await fetch('/api/onboarding/categories');
+                const data = await response.json();
+                
+                document.getElementById('categoriesResponse').innerHTML = `
+                    <strong>🎯 Available Categories:</strong><br>
+                    ${data.map(cat => `${cat.code} - ${cat.displayName}`).join('<br>')}
+                `;
+            } catch (error) {
+                document.getElementById('categoriesResponse').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function selectPosition() {
+            const position = document.getElementById('selectedPosition').value;
+            
+            try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add auth token for mobile clients
+                if (clientType === 'mobile' && authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch('/api/onboarding/select-position', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ position }),
+                    credentials: 'include' // Include cookies for web clients
+                });
+                
+                const data = await response.json();
+                document.getElementById('positionResponse').innerHTML = `
+                    <div class="success">✅ Position selected: ${position}</div>
+                `;
+            } catch (error) {
+                document.getElementById('positionResponse').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function selectCategories() {
+            const categorySelect = document.getElementById('selectedCategory');
+            const categories = Array.from(categorySelect.selectedOptions).map(option => option.value);
+            
+            try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add auth token for mobile clients
+                if (clientType === 'mobile' && authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch('/api/onboarding/select-categories', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ categories }),
+                    credentials: 'include' // Include cookies for web clients
+                });
+                
+                const data = await response.json();
+                document.getElementById('categoryResponse').innerHTML = `
+                    <div class="success">✅ Categories selected: ${categories.join(', ')}</div>
+                `;
+            } catch (error) {
+                document.getElementById('categoryResponse').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

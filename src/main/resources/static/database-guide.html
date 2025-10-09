@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>H2 Database Connection Guide</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .settings { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .error { background-color: #ffe6e6; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ff4444; }
+        .success { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #44aa44; }
+        code { background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        .big-code { background-color: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 14px; margin: 10px 0; }
+        h1 { color: #333; }
+        h2 { color: #555; }
+        .step { margin: 15px 0; }
+        .button { display: inline-block; background-color: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 5px; }
+        .button:hover { background-color: #005a87; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ H2 Database Console - Connection Guide</h1>
+        
+        <div class="error">
+            <h3>❌ Common Error</h3>
+            <p>If you see: <code>Database "/home/anounymous/test" not found</code></p>
+            <p><strong>You're using the wrong database URL!</strong></p>
+        </div>
+
+        <div class="success">
+            <h3>✅ Correct Connection Settings</h3>
+            <div class="settings">
+                <p><strong>JDBC URL:</strong> <code>jdbc:h2:mem:testdb</code></p>
+                <p><strong>User Name:</strong> <code>sa</code></p>
+                <p><strong>Password:</strong> <em>(leave empty)</em></p>
+                <p><strong>Driver Class:</strong> <code>org.h2.Driver</code></p>
+            </div>
+        </div>
+
+        <h2>📋 Step-by-Step Instructions</h2>
+        
+        <div class="step">
+            <h3>Step 1: Start the Application</h3>
+            <div class="big-code">./mvnw spring-boot:run</div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Open H2 Console</h3>
+            <p><a href="/h2-console" class="button">Open H2 Console</a></p>
+            <p>Or manually navigate to: <code>http://localhost:8080/h2-console</code></p>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Enter Connection Details</h3>
+            <p>In the H2 console login form, make sure these fields are set to:</p>
+            <div class="settings">
+                <p>🔹 <strong>Setting Name:</strong> Generic H2 (Embedded)</p>
+                <p>🔹 <strong>Driver Class:</strong> org.h2.Driver</p>
+                <p>🔹 <strong>JDBC URL:</strong> <span style="background-color: yellow; padding: 2px;">jdbc:h2:mem:testdb</span></p>
+                <p>🔹 <strong>User Name:</strong> sa</p>
+                <p>🔹 <strong>Password:</strong> <em>(empty)</em></p>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Test the Database</h3>
+            <p>Once connected, you can run these queries:</p>
+            <div class="big-code">SELECT * FROM users;<br>
+SELECT * FROM refresh_tokens;<br>
+SELECT * FROM otp_verifications;</div>
+        </div>
+
+        <h2>🔧 Database Information</h2>
+        <ul>
+            <li><strong>Type:</strong> H2 In-Memory Database</li>
+            <li><strong>Name:</strong> testdb</li>
+            <li><strong>Mode:</strong> Embedded (runs inside the application)</li>
+            <li><strong>Persistence:</strong> Data is lost when application stops</li>
+        </ul>
+
+        <h2>🚨 Troubleshooting</h2>
+        <div class="error">
+            <h4>Problem: "Database not found" error</h4>
+            <p><strong>Solution:</strong> You're using the wrong JDBC URL. Make sure it's exactly: <code>jdbc:h2:mem:testdb</code></p>
+        </div>
+
+        <div class="error">
+            <h4>Problem: Connection refused</h4>
+            <p><strong>Solution:</strong> Make sure the Spring Boot application is running first.</p>
+        </div>
+
+        <p style="margin-top: 40px; text-align: center; color: #666;">
+            <em>This guide is available at: <code>http://localhost:8080/database-guide.html</code></em>
+        </p>
+    </div>
+</body>
+</html>
