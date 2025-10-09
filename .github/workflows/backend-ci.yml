@@ -54,6 +54,12 @@ jobs:
             sleep 3
           done
           exit 1
+      - name: SonarQube Analysis
+        run: ./mvnw sonar:sonar \
+              -Dsonar.projectKey=backend-ci \
+              -Dsonar.host.url=https://188.213.128.197 \
+              -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests
