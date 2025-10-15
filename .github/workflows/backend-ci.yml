@@ -69,24 +69,12 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
-      # 6. Import SonarQube certificate (safe, ignore if already exists)
-      - name: Import SonarQube certificate into JDK
-        run: |
-          echo | openssl s_client -connect 188.213.128.197:443 -servername 188.213.128.197 2>/dev/null | openssl x509 > sonar.crt
-          # Vérifie si l'alias existe déjà
-          if ! $JAVA_HOME/bin/keytool -list -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit -alias sonar >/dev/null 2>&1; then
-            sudo $JAVA_HOME/bin/keytool -import -trustcacerts -noprompt -alias sonar -file sonar.crt -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit
-          else
-            echo "Certificat Sonar déjà présent dans le JDK, pas besoin d'importer."
-          fi
-
       # 7. SonarQube Analysis
       - name: SonarQube Analysis
         run: |
           ./mvnw sonar:sonar \
-            -Dsonar.ws.ignoreCertificate=true \
             -Dsonar.projectKey=backend-ci \
-            -Dsonar.host.url=https://188.213.128.197 \
+            -Dsonar.host.url=http://195.15.194.234:9000 \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       # 8. Build Docker image
